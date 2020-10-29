@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Row from '../components/Row'
 import Col from '../components/Col'
 import PokemonListItem from '../components/PokemonListItem'
@@ -11,7 +11,7 @@ import usePokemonsQty from '../hooks/usePokemonsQty'
 const Pokemons = () => {
   const [ page, setPage ] = useState( 1 )
   const [ search, setSearch ] = useState( '' )
-  const [ qty, setQty ] = useState( 10 )
+  const [ qty ] = useState( 10 )
   const pokemons = usePokemons( page, qty, search )
   const done = useDonePokemonLoad()
   const pokemonsQty = usePokemonsQty( search )
