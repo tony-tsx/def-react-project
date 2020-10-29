@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import useClassNames from "../hooks/useClassNames"
+import useStyleProp from "../hooks/useStyleProp"
 
 const Col = ( {
   className: classNameProp,
@@ -18,7 +19,7 @@ const Col = ( {
     )
   }, [ size, sm, md, lg, xl ] )
   const className = useClassNames( 'col', bootstrapClassSize, classNameProp )
-  return <div className={className} {...props} />
+  return <div className={className} {...useStyleProp( props )} />
 }
 
 export default Col

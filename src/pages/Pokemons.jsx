@@ -1,39 +1,94 @@
-import { useEffect, useState } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import Row from '../components/Row'
 import Col from '../components/Col'
-import api from '../helpers/api'
-import { Link } from 'react-router-dom'
+import PokemonListItem from '../components/PokemonListItem'
+import styled from 'styled-components'
+import Input from '../components/Input'
+import usePokemons from '../hooks/usePokemons'
+import useDonePokemonLoad from '../hooks/useDonePokemonLoad'
+import usePokemonsQty from '../hooks/usePokemonsQty'
 
 const Pokemons = () => {
-  const [ loading, setLoading ] = useState( false )
-  const [ pokemons, setPokemons ] = useState( [] )
+  const [ page, setPage ] = useState( 1 )
+  const [ search, setSearch ] = useState( '' )
+  const [ qty, setQty ] = useState( 10 )
+  const pokemons = usePokemons( page, qty, search )
+  const done = useDonePokemonLoad()
+  const pokemonsQty = usePokemonsQty( search )
 
-  useEffect( () => {
-    setLoading( true )
-    api.get( '/pokemon', { params: { limit: 40 } } )
-      .then( response => {
-        setPokemons( response.data.results )
-      } )
-      .catch( error => console.error( error ) )
-      .finally( () => setLoading( false ) )
+  const pageQty = useMemo( () => Math.round( pokemonsQty / qty ), [ pokemonsQty, qty ] )
+
+  const pages = useMemo( () => {
+    if ( page <= 6 )
+      return Array( pageQty ).fill( undefined )
+        .map( ( v, index ) => index + 1 )
+        .slice( 0, 11 )
+    else
+      return Array( pageQty ).fill( undefined )
+        .map( ( v, index ) => index + 1 )
+        .slice( page - 6, page + 5 )
+  }, [ pageQty, page ] )
+
+  const onChangeInput = useCallback( event => {
+    setPage( 1 )
+    setSearch( event.target.value )
+  }, [] )
+
+  const createPageChangeCallback = useCallback( ( number ) => {
+    return () => setPage( number )
   }, [] )
 
   return (
-    <Row>
+    <Row margin={'10px 0'}>
       <Col>
-        { loading && <h5>Carregando...</h5> }
-        <ul>
+        { !done && <h5>Carregando...</h5> }
+        <Input
+          value={search}
+          placeholder={'Inserir nome do pokémon...'}
+          onChange={onChangeInput} />
+        <List>
           { pokemons.map( pokemon => (
-            <li key={pokemon.id}>
-              <Link to={`/pokemons/${pokemon.name}`}>
-                {pokemon.name}
-              </Link>
-            </li>
+            <PokemonListItem key={pokemon.name} pokemon={pokemon}/>
           ) ) }
-        </ul>
+        </List>
+        <ContainerPagesNumber>
+          {pages.map( number => (
+            <div key={number}
+              className={ number === page ? 'active' : undefined }
+              onClick={createPageChangeCallback( number )}>
+              {number}
+            </div>
+          ) )}
+        </ContainerPagesNumber>
       </Col>
     </Row>
   )
 }
+
+const ContainerPagesNumber = styled( Row )`
+  align-items: center;
+  justify-content: center;
+  & > div {
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    width: 44px;
+    text-align: center;
+    cursor: pointer;
+    &.active {
+      background-color: ${ props => props.theme.colors.primary };
+      color: white;
+    }
+  }
+`
+
+const List = styled.ul`
+  list-style: none;
+  margin: 10px 0;
+  padding: 0;
+  border: 1px solid ${props => props.theme.colors.neutral}40;
+  border-radius: 5px;
+`
 
 export default Pokemons
