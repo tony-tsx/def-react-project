@@ -1,17 +1,4 @@
-import {
-  useMemo,
-  useCallback,
-  useReducer,
-  forwardRef,
-  useImperativeHandle,
-  useEffect,
-  useState,
-  useRef,
-  createElement,
-  Children,
-  cloneElement,
-  isValidElement
-} from 'react'
+import { useMemo, useCallback, useReducer } from 'react'
 import Row from '../components/Row'
 import Col from '../components/Col'
 import PokemonListItem from '../components/PokemonListItem'
@@ -20,24 +7,12 @@ import Input from '../components/Input'
 import usePokemons from '../hooks/usePokemons'
 import useDonePokemonLoad from '../hooks/useDonePokemonLoad'
 import usePokemonsQty from '../hooks/usePokemonsQty'
+import LazyComponent from '../components/LazyComponent'
 
 const initialState = {
   page: 1,
   search: '',
   qty: 10
-}
-
-const TestFunctionChild = () => null
-
-const TestFunction = ( { children } ) => {
-  console.log( children )
-  const resultMap = Children.map( children, ( child, index ) => {
-    if ( isValidElement( child ) ) {
-      return cloneElement( child, { prop4: false, prop1: undefined }, )
-    } else console.log( 'não é valid element', child )
-  } )
-  console.log( resultMap )
-  return null
 }
 
 const reducer = ( state = initialState, action ) => {
@@ -87,15 +62,8 @@ const Pokemons = () => {
     <Row margin={'10px 0'}>
       <Col>
         { !done && <h5>Carregando...</h5> }
-        <TestFunction>
-          <TestFunctionChild prop1='prop1' prop2={2} prop3={ { name: 'Tony' } }></TestFunctionChild>
-          Some String
-        </TestFunction>
-        {createElement( Input, {
-          value: state.search,
-          placeholder: 'Inserir nome do pokémon...',
-          onChange: onChangeInput,
-        } )}
+        <LazyComponent></LazyComponent>
+        <Input value={state.search} placeholder={'Inserir nome do pokémon...'} onChange={onChangeInput}/>
         <List>
           { pokemons.map( pokemon => (
             <PokemonListItem key={pokemon.name} pokemon={pokemon}/>
