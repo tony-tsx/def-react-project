@@ -1,4 +1,17 @@
-import { useState, useMemo, useCallback } from 'react'
+import {
+  useMemo,
+  useCallback,
+  useReducer,
+  forwardRef,
+  useImperativeHandle,
+  useEffect,
+  useState,
+  useRef,
+  createElement,
+  Children,
+  cloneElement,
+  isValidElement
+} from 'react'
 import Row from '../components/Row'
 import Col from '../components/Col'
 import PokemonListItem from '../components/PokemonListItem'
@@ -8,44 +21,81 @@ import usePokemons from '../hooks/usePokemons'
 import useDonePokemonLoad from '../hooks/useDonePokemonLoad'
 import usePokemonsQty from '../hooks/usePokemonsQty'
 
-const Pokemons = () => {
-  const [ page, setPage ] = useState( 1 )
-  const [ search, setSearch ] = useState( '' )
-  const [ qty ] = useState( 10 )
-  const pokemons = usePokemons( page, qty, search )
-  const done = useDonePokemonLoad()
-  const pokemonsQty = usePokemonsQty( search )
+const initialState = {
+  page: 1,
+  search: '',
+  qty: 10
+}
 
-  const pageQty = useMemo( () => Math.round( pokemonsQty / qty ), [ pokemonsQty, qty ] )
+const TestFunctionChild = () => null
+
+const TestFunction = ( { children } ) => {
+  console.log( children )
+  const resultMap = Children.map( children, ( child, index ) => {
+    if ( isValidElement( child ) ) {
+      return cloneElement( child, { prop4: false, prop1: undefined }, )
+    } else console.log( 'não é valid element', child )
+  } )
+  console.log( resultMap )
+  return null
+}
+
+const reducer = ( state = initialState, action ) => {
+  switch ( action.type ) {
+    case 'SET_PAGE':
+      return { ...state, page: action.page }
+    case 'SET_SEARCH': 
+      return { ...state, search: action.search }
+    case 'SET_QTY': 
+      return { ...state, qty: action.qty }
+    case 'RESET_PAGE_AND_SET_SEARCH':
+      return { ...state, page: 1, search: action.search }
+    default: return state
+  }
+}
+
+const Pokemons = () => {
+  const [ state, dispatch ] = useReducer( reducer, initialState )
+  const pokemons = usePokemons( state.page, state.qty, state.search )
+  const done = useDonePokemonLoad()
+  const pokemonsQty = usePokemonsQty( state.search )
+
+  const pageQty = useMemo( () => Math.round( pokemonsQty / state.qty ), [ pokemonsQty, state.qty ] )
 
   const pages = useMemo( () => {
-    if ( page <= 6 )
+    if ( state.page <= 6 )
       return Array( pageQty ).fill( undefined )
         .map( ( v, index ) => index + 1 )
         .slice( 0, 11 )
     else
       return Array( pageQty ).fill( undefined )
         .map( ( v, index ) => index + 1 )
-        .slice( page - 6, page + 5 )
-  }, [ pageQty, page ] )
+        .slice( state.page - 6, state.page + 5 )
+  }, [ pageQty, state.page ] )
 
   const onChangeInput = useCallback( event => {
-    setPage( 1 )
-    setSearch( event.target.value )
+    dispatch( { type: 'RESET_PAGE_AND_SET_SEARCH', search: event.target.value } )
   }, [] )
 
   const createPageChangeCallback = useCallback( ( number ) => {
-    return () => setPage( number )
+    return () => {
+      dispatch( { type: 'SET_PAGE', page: number } )
+    }
   }, [] )
 
   return (
     <Row margin={'10px 0'}>
       <Col>
         { !done && <h5>Carregando...</h5> }
-        <Input
-          value={search}
-          placeholder={'Inserir nome do pokémon...'}
-          onChange={onChangeInput} />
+        <TestFunction>
+          <TestFunctionChild prop1='prop1' prop2={2} prop3={ { name: 'Tony' } }></TestFunctionChild>
+          Some String
+        </TestFunction>
+        {createElement( Input, {
+          value: state.search,
+          placeholder: 'Inserir nome do pokémon...',
+          onChange: onChangeInput,
+        } )}
         <List>
           { pokemons.map( pokemon => (
             <PokemonListItem key={pokemon.name} pokemon={pokemon}/>
@@ -54,7 +104,7 @@ const Pokemons = () => {
         <ContainerPagesNumber>
           {pages.map( number => (
             <div key={number}
-              className={ number === page ? 'active' : undefined }
+              className={ number === state.page ? 'active' : undefined }
               onClick={createPageChangeCallback( number )}>
               {number}
             </div>

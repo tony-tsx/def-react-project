@@ -1,5 +1,9 @@
 // import { combineReducers } from 'redux'
-import { ADD_POKEMONS_IN_LIST, SET_POKEMONS_LIST_END } from '../constants/actions'
+import {
+  ADD_POKEMONS_IN_LIST,
+  SET_POKEMONS_LIST_END,
+  SET_POKEMONS_TYPES
+} from '../constants/actions'
 import initialState from '../store/initialState'
 
 const reducer = ( state = initialState, action ) => {
@@ -18,6 +22,14 @@ const reducer = ( state = initialState, action ) => {
         pokemons: {
           ...state.pokemons,
           end: true
+        }
+      }
+    case SET_POKEMONS_TYPES:
+      return {
+        ...state,
+        pokemons: {
+          ...state.pokemons,
+          types: action.types
         }
       }
     default: return state
