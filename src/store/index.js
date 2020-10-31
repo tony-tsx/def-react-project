@@ -1,7 +1,6 @@
-import { IS_PROD, IS_JEST } from '../constants'
-
 let store
-if ( IS_PROD || IS_JEST ) store = require( './index.prod' )
+if ( process.env.NODE_ENV === 'production' ) store = require( './index.prod' )
+else if ( process.env.NODE_ENV === 'test' ) store = require( './index.prod' )
 else store = require( './index.dev' )
 
 export default store
