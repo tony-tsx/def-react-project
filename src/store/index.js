@@ -1,8 +1,9 @@
-import { createStore, applyMiddleware } from 'redux'
-import logger from 'redux-logger'
-import reducer from '../reducers'
-import initialState from './initialState'
+import storeDev from './index.dev'
+import storeProd from './index.prod'
+import { IS_PROD, IS_JEST } from '../constants'
 
-const store = createStore( reducer, initialState, applyMiddleware( logger ) )
+let store
+if ( IS_PROD || IS_JEST ) store = storeProd
+else store = storeDev
 
 export default store

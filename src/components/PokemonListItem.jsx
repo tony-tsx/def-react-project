@@ -30,10 +30,7 @@ const Item = styled.li`
 `
 
 PokemonListItem.propTypes = {
-  pokemon: PropTypes.objectOf( {
-    name: PropTypes.string.isRequired,
-    url: PropTypes.string.isRequired,
-  } ).isRequired
+  pokemon: PropTypes.object.isRequired
 }
 
 export default memo( PokemonListItem )
